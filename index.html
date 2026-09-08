@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Internet Speed Checker</title>
+  <meta name="description" content="Find out what your connection is actually good for: streaming, gaming and video calls scored from download, upload, latency, jitter, packet loss and bufferbloat.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Speed Check">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Internet Speed Checker home">
+      <svg viewBox="0 0 32 32" aria-hidden="true" width="28" height="28">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        <path d="M16 16 L23 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.2" fill="currentColor"/>
+      </svg>
+      <span>Internet Speed Checker</span>
+    </a>
+    <p class="tagline">Not just how fast. What it's good for.</p>
+  </header>
+
+  <main id="main">
+    <!-- ── Live gauge ─────────────────────────────────────────────────── -->
+    <section class="gauge" aria-live="polite" aria-atomic="true">
+      <p class="phase" id="phase">Ready</p>
+      <p class="big">
+        <span class="num" id="bigNum">—</span>
+        <span class="unit" id="bigUnit">Mbps</span>
+      </p>
+      <div class="bar" role="progressbar" id="bar" aria-label="Test progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span id="barFill"></span>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="startBtn" type="button">Start test</button>
+        <button class="btn" id="stopBtn" type="button" hidden>Stop</button>
+      </div>
+      <p class="error" id="error" hidden></p>
+    </section>
+
+    <!-- ── Readiness ──────────────────────────────────────────────────── -->
+    <section class="readiness" id="readiness" aria-labelledby="readyTitle" hidden>
+      <h2 id="readyTitle" class="sr-only">What your connection is ready for</h2>
+      <article class="ready" data-key="streaming">
+        <div class="ready-grade" id="rsGrade">—</div>
+        <div class="ready-body">
+          <h3>Streaming</h3>
+          <p class="ready-head" id="rsHead">—</p>
+          <p class="ready-detail" id="rsDetail"></p>
+        </div>
+      </article>
+      <article class="ready" data-key="gaming">
+        <div class="ready-grade" id="rgGrade">—</div>
+        <div class="ready-body">
+          <h3>Gaming</h3>
+          <p class="ready-head" id="rgHead">—</p>
+          <p class="ready-detail" id="rgDetail"></p>
+        </div>
+      </article>
+      <article class="ready" data-key="videoCall">
+        <div class="ready-grade" id="rvGrade">—</div>
+        <div class="ready-body">
+          <h3>Video calls</h3>
+          <p class="ready-head" id="rvHead">—</p>
+          <p class="ready-detail" id="rvDetail"></p>
+        </div>
+      </article>
+    </section>
+
+    <!-- ── Raw results ────────────────────────────────────────────────── -->
+    <section class="results" aria-label="Measurements">
+      <article class="card">
+        <h2>Download</h2>
+        <p class="value"><span id="resDown">—</span><small>Mbps</small></p>
+        <p class="hint">How fast data reaches you</p>
+      </article>
+      <article class="card">
+        <h2>Upload</h2>
+        <p class="value"><span id="resUp">—</span><small>Mbps</small></p>
+        <p class="hint">How fast data leaves you</p>
+      </article>
+      <article class="card">
+        <h2>Latency</h2>
+        <p class="value"><span id="resPing">—</span><small>ms</small></p>
+        <p class="hint">Round trip to the server</p>
+      </article>
+      <article class="card">
+        <h2>Jitter</h2>
+        <p class="value"><span id="resJitter">—</span><small>ms</small></p>
+        <p class="hint">How steady the latency is</p>
+      </article>
+      <article class="card">
+        <h2>Packet loss</h2>
+        <p class="value"><span id="resLoss">—</span><small>%</small></p>
+        <p class="hint">Probes that never came back</p>
+      </article>
+      <article class="card">
+        <h2>Bufferbloat</h2>
+        <p class="value"><span id="resBloat">—</span><small id="resBloatGrade"></small></p>
+        <p class="hint" id="resBloatHint">Extra latency while the link is busy</p>
+      </article>
+    </section>
+
+    <p class="meta" id="meta" hidden></p>
+
+    <!-- ── History ────────────────────────────────────────────────────── -->
+    <section class="history" aria-labelledby="historyTitle">
+      <div class="history-head">
+        <h2 id="historyTitle">Recent tests</h2>
+        <button class="btn small" id="clearBtn" type="button" hidden>Clear</button>
+      </div>
+      <p class="empty" id="historyEmpty">No tests yet. Results are saved on this device only.</p>
+      <div class="tablewrap">
+        <table id="historyTable" hidden>
+          <thead>
+            <tr>
+              <th scope="col">When</th>
+              <th scope="col" class="r">Down</th>
+              <th scope="col" class="r">Up</th>
+              <th scope="col" class="r">Latency</th>
+              <th scope="col" class="r">Jitter</th>
+              <th scope="col" class="r">Loss</th>
+              <th scope="col" class="r">Bloat</th>
+              <th scope="col">Server</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="about">
+      <h2>How this works</h2>
+      <p>
+        The test downloads and uploads data to the nearest Cloudflare edge server for a few
+        seconds each and measures how many megabits per second got through. Latency is the
+        median of twenty small round trips with the server's own processing time removed;
+        probes that never return count as packet loss. While the link is saturated the test
+        keeps pinging, and the rise in latency is your bufferbloat. The readiness grades turn
+        all of that into what matters: will the film buffer, will the game lag, will the call
+        freeze. Wi‑Fi, time of day and other devices all move the numbers, so run it two or
+        three times for a fair picture.
+      </p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Internet Speed Checker</span>
+    <span>Test servers by Cloudflare. No data about you is stored anywhere but this browser.</span>
+  </footer>
+
+  <script src="js/stats.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
