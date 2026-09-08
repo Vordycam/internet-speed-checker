@@ -6,7 +6,7 @@
 
 /* Bump on every change to js/, styles.css or index.html, or installed
    phones keep the old files. */
-var CACHE = 'isc-v1';
+var CACHE = 'isc-v2';
 var SHELL = [
   './',
   './index.html',

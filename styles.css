@@ -265,6 +265,13 @@ tr:first-child td { border-top: 0; }
   font-size: 12.5px;
 }
 
+.watermark {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.55;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bar span { transition: none; }
 }
